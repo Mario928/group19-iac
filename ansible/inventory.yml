@@ -1,0 +1,8 @@
+all:
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  hosts:
+    main-vm:
+      ansible_host: ${floating_ip_address}  # Will be populated with the actual IP after Terraform apply
+      ansible_user: cc
+

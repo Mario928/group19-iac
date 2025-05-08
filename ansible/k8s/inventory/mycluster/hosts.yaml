@@ -1,0 +1,23 @@
+all:
+  hosts:
+    main-vm:
+      ansible_host: ${floating_ip_address}  # Will be populated with the actual IP after Terraform apply
+      ansible_user: cc
+      ip: ${floating_ip_address}
+      access_ip: ${floating_ip_address}
+  children:
+    kube_control_plane:
+      hosts:
+        main-vm:
+    kube_node:
+      hosts:
+        main-vm:
+    etcd:
+      hosts:
+        main-vm:
+    k8s_cluster:
+      children:
+        kube_control_plane:
+        kube_node:
+    calico_rr:
+      hosts: {}
