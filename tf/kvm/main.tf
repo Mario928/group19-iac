@@ -6,6 +6,10 @@ resource "openstack_networking_port_v2" "main_vm_port" {
     data.openstack_networking_secgroup_v2.allow_8000.id,
     data.openstack_networking_secgroup_v2.allow_9000.id,
     data.openstack_networking_secgroup_v2.allow_9001.id,
+    data.openstack_networking_secgroup_v2.allow_8080.id,
+    data.openstack_networking_secgroup_v2.allow_8081.id,
+    data.openstack_networking_secgroup_v2.allow_http_80.id,
+    data.openstack_networking_secgroup_v2.allow_9090.id,
   ]
 }
 
@@ -35,7 +39,7 @@ resource "openstack_networking_floatingip_v2" "main_vm_floating_ip" {
 resource "openstack_blockstorage_volume_v3" "blockstorage_volume" {
   name = "blockstorage-volume-${var.suffix}"
   size = 20
-  // availability_zone = "KVM@TACC"  // Commented because it's often unnecessary and may cause errors
+  // availability_zone = "KVM@TACC"  
 }
 
 resource "openstack_compute_volume_attach_v2" "blockstorage_volume_attach" {

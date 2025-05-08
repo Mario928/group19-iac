@@ -18,4 +18,20 @@ data "openstack_networking_secgroup_v2" "allow_9001" {
   name = "allow-9001"
 }
 
+data "openstack_networking_secgroup_v2" "allow_8080" {
+  name = "allow-8080"
+}
+
+data "openstack_networking_secgroup_v2" "allow_8081" {
+  name = "allow-8081"
+}
+
+data "openstack_networking_secgroup_v2" "allow_http_80" {
+  name = "allow-http-80"
+}
+
+data "openstack_networking_secgroup_v2" "allow_9090" {
+  name = "allow-9090"
+}
+
 
