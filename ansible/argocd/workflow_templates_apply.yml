@@ -1,6 +1,6 @@
 ---
 - name: Clone repo and apply specific Argo WorkflowTemplates
-  hosts: main-vm
+  hosts: node1
   become: yes
   vars:
     repo_url: https://github.com/teaching-on-testbeds/gourmetgram-iac.git

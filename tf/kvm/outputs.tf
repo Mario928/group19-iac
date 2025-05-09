@@ -1,21 +1,21 @@
-output "vm_name" {
-  value       = openstack_compute_instance_v2.main_vm.name
-  description = "Name of the deployed VM"
+output "node_names" {
+  value       = { for k, v in openstack_compute_instance_v2.nodes : k => v.name }
+  description = "Names of all deployed nodes"
 }
 
-output "network_port_name" {
-  value       = openstack_networking_port_v2.main_vm_port.name
-  description = "Name of the VM's network port"
+output "private_ips" {
+  value       = var.nodes
+  description = "Private IP addresses of the nodes"
 }
 
 output "floating_ip_address" {
-  value       = openstack_networking_floatingip_v2.main_vm_floating_ip.address
-  description = "Public IP to reach the VM"
+  value       = openstack_networking_floatingip_v2.node1_floating_ip.address
+  description = "Public IP to reach node1 (main node)"
 }
 
 output "ssh_command" {
-  value       = "ssh -i ~/.ssh/group19-shared-key cc@${openstack_networking_floatingip_v2.main_vm_floating_ip.address}"
-  description = "SSH command to connect to the VM"
+  value       = "ssh -i ~/.ssh/${var.key} cc@${openstack_networking_floatingip_v2.node1_floating_ip.address}"
+  description = "SSH command to connect to node1"
 }
 
 output "block_volume_name" {
@@ -31,5 +31,10 @@ output "object_storage_container" {
 output "ssh_key_used" {
   value       = var.key
   description = "SSH key name used for this deployment"
+}
+
+output "private_network" {
+  value       = openstack_networking_network_v2.private_net.name
+  description = "Name of the private network for inter-node communication"
 }
 

@@ -1,6 +1,6 @@
 ---
 - name: Post-Install kubectl Setup
-  hosts: main-vm
+  hosts: node1,node2
   become: yes
   vars:
     ansible_user: cc
@@ -32,7 +32,7 @@
         msg: "{{ kubectl_output.stdout_lines }}"
 
 - name: Add User to Docker Group
-  hosts: main-vm
+  hosts: node1,node2,node3
   become: yes
 
   vars:
@@ -61,7 +61,7 @@
         msg: "{{ cc_id.stdout }}"
 
 - name: Setup Kubernetes Dashboard
-  hosts: main-vm
+  hosts: node1
   become: yes
   tasks:
     - name: Create dashboard admin-user and RBAC
@@ -108,21 +108,21 @@
         msg: "Dashboard token: {{ dashboard_token.stdout }}"
 
 - name: Configure DNS and Restart CoreDNS
-  hosts: main-vm
+  hosts: node1,node2,node3
   become: yes
   tasks:
     - name: Set DNS for interface ens4
       command: resolvectl dns ens4 127.0.0.1
 
-- name: Restart CoreDNS on main-vm
-  hosts: main-vm
+- name: Restart CoreDNS on node1
+  hosts: node1
   become: yes
   tasks:
     - name: Restart CoreDNS deployment
       command: kubectl -n kube-system rollout restart deployment coredns
 
 - name: Install ArgoCD CLI
-  hosts: main-vm
+  hosts: node1
   become: yes
   tasks:
     - name: Download ArgoCD CLI binary
@@ -141,7 +141,7 @@
         msg: "{{ argocd_version.stdout_lines }}"
 
 - name: Get ArgoCD admin password
-  hosts: main-vm
+  hosts: node1
   become: yes
   tasks:
     - name: Fetch ArgoCD initial admin password
@@ -155,7 +155,7 @@
         msg: "ArgoCD admin password: {{ argocd_admin_password.stdout }}"
 
 - name: Install Argo Workflows
-  hosts: main-vm
+  hosts: node1
   become: yes
   tasks:
     - name: Create argo namespace
@@ -171,7 +171,7 @@
         executable: /bin/bash
 
 - name: Install Argo Events
-  hosts: main-vm
+  hosts: node1
   become: yes
   tasks:
     - name: Create argo-events namespace
@@ -187,7 +187,7 @@
         executable: /bin/bash
 
 - name: Copy ArgoCD admin secret to Argo Workflows namespace
-  hosts: main-vm
+  hosts: node1
   become: yes
   vars:
     source_namespace: argocd

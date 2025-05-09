@@ -16,7 +16,7 @@
         masked: yes
 
 - name: Set up insecure registry for Docker
-  hosts: main-vm
+  hosts: node1,node2,node3
   become: yes
 
   vars:

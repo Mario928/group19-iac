@@ -1,6 +1,6 @@
 ---
-- name: Deploy Canary Environment via ArgoCD
-  hosts: main-vm
+- name: Deploy Gourmetgram Canary via ArgoCD & Helm
+  hosts: node1
   become: yes
   vars:
     app_name: gourmetgram-canary

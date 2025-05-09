@@ -9,3 +9,13 @@ variable "key" {
   type        = string
   default     = "group19-shared-key"
 }
+
+variable "nodes" {
+  description = "Map of node names to their private IP addresses"
+  type        = map(string)
+  default     = {
+    "node1" = "192.168.1.11"
+    "node2" = "192.168.1.12"
+    "node3" = "192.168.1.13"
+  }
+}

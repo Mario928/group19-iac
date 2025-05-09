@@ -1,6 +1,6 @@
 ---
 - name: Deploy Gourmetgram Staging via ArgoCD & Helm
-  hosts: main-vm
+  hosts: node1
   become: yes
   vars:
     app_name: gourmetgram-staging

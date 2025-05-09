@@ -1,20 +1,35 @@
 all:
   hosts:
-    main-vm:
-      ansible_host: ${floating_ip_address}  # Will be populated with the actual IP after Terraform apply
+    node1:
+      ansible_host: 192.168.1.11
       ansible_user: cc
-      ip: ${floating_ip_address}
-      access_ip: ${floating_ip_address}
+      ip: 192.168.1.11
+      access_ip: 192.168.1.11
+    node2:
+      ansible_host: 192.168.1.12
+      ansible_user: cc
+      ip: 192.168.1.12
+      access_ip: 192.168.1.12
+    node3:
+      ansible_host: 192.168.1.13
+      ansible_user: cc
+      ip: 192.168.1.13
+      access_ip: 192.168.1.13
   children:
     kube_control_plane:
       hosts:
-        main-vm:
+        node1:
+        node2:
     kube_node:
       hosts:
-        main-vm:
+        node1:
+        node2:
+        node3:
     etcd:
       hosts:
-        main-vm:
+        node1:
+        node2:
+        node3:
     k8s_cluster:
       children:
         kube_control_plane:

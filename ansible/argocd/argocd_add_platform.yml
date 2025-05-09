@@ -1,6 +1,6 @@
 ---
 - name: Deploy MLflow platform via ArgoCD & Helm with MinIO secret handling
-  hosts: main-vm
+  hosts: node1
   become: yes
   vars:
     argocd_username: "admin"

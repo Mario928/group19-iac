@@ -1,5 +1,5 @@
-data "openstack_networking_network_v2" "sharednet3" {
-  name = "sharednet3"
+data "openstack_networking_network_v2" "sharednet2" {
+  name = "sharednet2"
 }
 
 data "openstack_networking_secgroup_v2" "allow_ssh" {
