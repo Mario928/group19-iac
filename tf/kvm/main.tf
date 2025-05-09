@@ -10,6 +10,12 @@ resource "openstack_networking_port_v2" "main_vm_port" {
     data.openstack_networking_secgroup_v2.allow_8081.id,
     data.openstack_networking_secgroup_v2.allow_http_80.id,
     data.openstack_networking_secgroup_v2.allow_9090.id,
+    data.openstack_networking_secgroup_v2.allow_8001.id,
+    data.openstack_networking_secgroup_v2.allow_8002.id,
+    data.openstack_networking_secgroup_v2.allow_8501.id,
+    data.openstack_networking_secgroup_v2.allow_3000.id,
+    data.openstack_networking_secgroup_v2.allow_5050.id,
+    data.openstack_networking_secgroup_v2.allow_8888.id,
   ]
 }
 
