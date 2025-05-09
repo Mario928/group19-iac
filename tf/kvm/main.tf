@@ -44,7 +44,8 @@ resource "openstack_networking_floatingip_v2" "main_vm_floating_ip" {
 
 resource "openstack_blockstorage_volume_v3" "blockstorage_volume" {
   name = "blockstorage-volume-${var.suffix}"
-  size = 20
+  size = 100
+  enable_online_resize = true
   // availability_zone = "KVM@TACC"  
 }
 
