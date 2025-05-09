@@ -71,8 +71,8 @@ resource "openstack_compute_instance_v2" "nodes" {
   EOF
 }
 
-// Assiging floating IP
-/*
+// Assign floating IP to the first node
+/* Original floating IP resource that would create a new floating IP
 resource "openstack_networking_floatingip_v2" "node1_floating_ip" {
   pool        = "public"
   description = "Floating IP for node1-group19-${var.suffix}"
@@ -80,19 +80,17 @@ resource "openstack_networking_floatingip_v2" "node1_floating_ip" {
 }
 */
 
-// reusing existing floating IP from previous deployment
+// Create a new floating IP since the old one was destroyed
 resource "openstack_networking_floatingip_v2" "node1_floating_ip" {
-  address     = "129.114.27.144"  // existing floating IP address
   pool        = "public"
-  description = "Reused Floating IP for node1-group19-${var.suffix}"
+  description = "Floating IP for node1-group19-${var.suffix}"
   port_id     = openstack_networking_port_v2.sharednet2_ports["node1"].id
 }
 
-// block storage for persistent data 
-// Commented out original block storage
-/*
+// Block storage for persistent data (attached to node1)
+/* Original block storage resource that would create a new volume
 resource "openstack_blockstorage_volume_v3" "blockstorage_volume" {
-  name = "blockstorage-volume-${var.suffix}"
+  name = "blockstorage-volume-${var.suffix}"  // Would create a new volume with dynamic name
   size = 100
   enable_online_resize = true
 }
@@ -100,7 +98,7 @@ resource "openstack_blockstorage_volume_v3" "blockstorage_volume" {
 
 // Reusing existing block storage from previous deployment
 resource "openstack_blockstorage_volume_v3" "blockstorage_volume" {
-  name = "blockstorage-volume-project19"  // existing block storage name
+  name = "blockstorage-volume-project19"  // Existing block storage name
   size = 100
   enable_online_resize = true
 }
@@ -110,17 +108,16 @@ resource "openstack_compute_volume_attach_v2" "blockstorage_volume_attach" {
   volume_id   = openstack_blockstorage_volume_v3.blockstorage_volume.id
 }
 
-// create object storage 
-/*
+/* Original object storage resource that would create a new container
 resource "openstack_objectstorage_container_v1" "objectstore_container" {
   provider = openstack.swift
-  name     = "object-persist-project19"
+  name     = "object-container-${var.suffix}"  // Would create a new container with dynamic name
 }
 */
 
-// reusing existing object storage container
+// Reusing existing object storage container
 resource "openstack_objectstorage_container_v1" "objectstore_container" {
   provider = openstack.swift
-  name     = "object-persist-project19"  // resusing the existing container
+  name     = "object-persist-project19"  // Keeping the existing name
 }
 
