@@ -234,3 +234,43 @@
 
     - name: Apply sysctl settings immediately
       command: sysctl --system
+
+- name: Configure Block Storage
+  hosts: kube_control_plane[0]
+  become: true
+  tasks:
+    - name: Configure block storage for MinIO persistence
+      shell: |
+        # Check if block device exists
+        if [ -e /dev/vdb ]; then
+          # Check if filesystem exists, if not create it
+          if ! blkid /dev/vdb; then
+            mkfs.ext4 /dev/vdb
+          fi
+          
+          # Create mount point
+          mkdir -p /mnt/tf-blockstore
+          
+          # Add to fstab if not already there
+          if ! grep -q "/dev/vdb" /etc/fstab; then
+            echo "/dev/vdb /mnt/tf-blockstore ext4 defaults 0 0" >> /etc/fstab
+          fi
+          
+          # Mount if not mounted
+          if ! mountpoint -q /mnt/tf-blockstore; then
+            mount /mnt/tf-blockstore
+          fi
+          
+          # Set permissions
+          chown -R 1000:1000 /mnt/tf-blockstore
+          chmod 777 /mnt/tf-blockstore
+          
+          echo "Block storage configured successfully"
+        else
+          echo "Block device /dev/vdb not found"
+          exit 1
+        fi
+      args:
+        executable: /bin/bash
+      register: block_storage_result
+      changed_when: block_storage_result.rc == 0
