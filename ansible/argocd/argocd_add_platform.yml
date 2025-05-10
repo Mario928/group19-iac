@@ -1,5 +1,5 @@
 ---
-- name: Deploy MLflow platform via ArgoCD & Helm with MinIO secret handling
+- name: Deploy MLflow platform via ArgoCD & Helm with MinIO secret handling 
   hosts: node1
   become: yes
   vars:
