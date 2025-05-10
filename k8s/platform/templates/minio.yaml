@@ -1,5 +1,35 @@
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: tf-block-storage-pv
+  namespace: gourmetgram-platform
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: tf-block-storage
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - node1
+  local:
+    path: /mnt/mydata
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: tf-block-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: minio-pvc
@@ -7,6 +37,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
+  storageClassName: tf-block-storage
   resources:
     requests:
       storage: 5Gi
@@ -26,10 +57,12 @@ spec:
       labels:
         app: minio
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: node1
       containers:
         - name: minio
-          image: minio/minio
-          args: ["server", "/data", "--console-address", ":9001"]
+          image: minio/minio:RELEASE.2023-04-20T17-56-55Z
+          args: ["gateway", "swift", "--console-address", ":9001"]
           ports:
             - containerPort: 9000
             - containerPort: 9001
@@ -44,6 +77,31 @@ spec:
                 secretKeyRef:
                   name: minio-credentials
                   key: secretkey
+            # Swift gateway specific env vars
+            - name: MINIO_GATEWAY_SWIFT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: swift-credentials
+                  key: username
+            - name: MINIO_GATEWAY_SWIFT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: swift-credentials
+                  key: password
+            - name: MINIO_GATEWAY_SWIFT_AUTH
+              value: "v3"
+            - name: MINIO_GATEWAY_SWIFT_DOMAIN
+              value: "Default"
+            - name: MINIO_GATEWAY_SWIFT_TENANT
+              valueFrom:
+                secretKeyRef:
+                  name: swift-credentials
+                  key: tenant
+            - name: MINIO_GATEWAY_SWIFT_URL
+              valueFrom:
+                secretKeyRef:
+                  name: swift-credentials
+                  key: auth_url
           volumeMounts:
             - name: minio-storage
               mountPath: /data
