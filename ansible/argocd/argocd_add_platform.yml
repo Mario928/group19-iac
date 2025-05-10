@@ -7,7 +7,9 @@
     repo_path: "https://github.com/Mario928/group19-iac.git"
     app_name: "gourmetgram-platform"
     app_path: "k8s/platform"
-    minio_access_key: "your-access-key"
+    minio_access_key: "minioadmin"
+    minio_secret_key: "minioadmin"
+    swift_container: "object-persist-project19"
 
   tasks:
     - name: Get ArgoCD admin password from Kubernetes secret
@@ -77,6 +79,71 @@
       when: minio_secret_check.rc == 0
       set_fact:
         minio_secret_key: "{{ existing_secret_b64.stdout | b64decode }}"
+
+    - name: Check if Swift credentials secret already exists
+      command: kubectl get secret swift-credentials -n gourmetgram-platform
+      register: swift_secret_check
+      failed_when: false
+      changed_when: false
+
+    - name: Get Swift credentials from OpenStack environment
+      when: swift_secret_check.rc != 0
+      shell: |
+        # Extract OpenStack credentials from clouds.yaml
+        export OS_AUTH_URL=$(grep auth_url /root/.config/openstack/clouds.yaml | awk '{print $2}')
+        export OS_AUTH_TYPE=v3applicationcredential
+        export OS_APPLICATION_CREDENTIAL_ID=$(grep application_credential_id /root/.config/openstack/clouds.yaml | awk '{print $2}' | tr -d '"')
+        export OS_APPLICATION_CREDENTIAL_SECRET=$(grep application_credential_secret /root/.config/openstack/clouds.yaml | awk '{print $2}' | tr -d '"')
+        export OS_REGION_NAME=$(grep region_name /root/.config/openstack/clouds.yaml | awk '{print $2}')
+        
+        # Get Swift credentials
+        OS_PROJECT_ID=$(openstack token issue -f json | jq -r '.project_id')
+        OS_AUTH_TOKEN=$(openstack token issue -f value -c id)
+        
+        # Output as JSON for easier parsing
+        echo "{\"auth_url\": \"$OS_AUTH_URL\", \"tenant\": \"$OS_PROJECT_ID\", \"token\": \"$OS_AUTH_TOKEN\"}"
+      args:
+        executable: /bin/bash
+      register: swift_credentials
+
+    - name: Parse Swift credentials
+      when: swift_secret_check.rc != 0
+      set_fact:
+        swift_auth_url: "{{ swift_credentials.stdout | from_json | json_query('auth_url') }}"
+        swift_tenant: "{{ swift_credentials.stdout | from_json | json_query('tenant') }}"
+        swift_token: "{{ swift_credentials.stdout | from_json | json_query('token') }}"
+
+    - name: Create Swift credentials secret
+      when: swift_secret_check.rc != 0
+      command: >
+        kubectl create secret generic swift-credentials
+        --namespace gourmetgram-platform
+        --from-literal=auth_url={{ swift_auth_url }}
+        --from-literal=tenant={{ swift_tenant }}
+        --from-literal=password={{ swift_token }}
+        --from-literal=username="token"
+      register: swift_secret_create
+
+    - name: Prepare block storage mount on node1
+      shell: |
+        mkdir -p /mnt/tf-blockstore
+        if ! mountpoint -q /mnt/tf-blockstore; then
+          if ! blkid /dev/vdb; then
+            echo "Formatting block volume..."
+            mkfs.ext4 /dev/vdb
+          fi
+          
+          if ! grep -q "/dev/vdb" /etc/fstab; then
+            echo "/dev/vdb /mnt/tf-blockstore ext4 defaults 0 0" >> /etc/fstab
+          fi
+          mount /mnt/tf-blockstore || true
+        fi
+        chown -R 1000:1000 /mnt/tf-blockstore
+        chmod 777 /mnt/tf-blockstore
+      args:
+        executable: /bin/bash
+      register: mount_result
+      changed_when: mount_result.rc == 0
 
     - name: Check if ArgoCD application exists
       command: >
