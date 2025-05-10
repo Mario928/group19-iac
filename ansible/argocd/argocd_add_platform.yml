@@ -126,20 +126,20 @@
 
     - name: Prepare block storage mount on node1
       shell: |
-        mkdir -p /mnt/tf-blockstore
-        if ! mountpoint -q /mnt/tf-blockstore; then
+        mkdir -p /mnt/mydata
+        if ! mountpoint -q /mnt/mydata; then
           if ! blkid /dev/vdb; then
             echo "Formatting block volume..."
             mkfs.ext4 /dev/vdb
           fi
           
-          if ! grep -q "/dev/vdb" /etc/fstab; then
-            echo "/dev/vdb /mnt/tf-blockstore ext4 defaults 0 0" >> /etc/fstab
+          if ! grep -q "/dev/vdb /mnt/mydata" /etc/fstab; then
+            echo "/dev/vdb /mnt/mydata ext4 defaults 0 0" >> /etc/fstab
           fi
-          mount /mnt/tf-blockstore || true
+          mount /mnt/mydata || true
         fi
-        chown -R 1000:1000 /mnt/tf-blockstore
-        chmod 777 /mnt/tf-blockstore
+        chown -R 1000:1000 /mnt/mydata
+        chmod 777 /mnt/mydata
       args:
         executable: /bin/bash
       register: mount_result
