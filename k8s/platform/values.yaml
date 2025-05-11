@@ -4,7 +4,7 @@ grafana:
 prometheus:
   externalIP: "129.114.26.124"
 
-label-studio:
+labelstudio:
   externalIP: "129.114.26.124"
 
 minio:
