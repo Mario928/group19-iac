@@ -73,8 +73,8 @@ spec:
           mountPath: /mnt/mydata/labelstudio
       volumes:
       - name: labelstudio-storage
-        persistentVolume:
-          claimName: labelstudio-data-pv
+        persistentVolumeClaim:
+          claimName: labelstudio-data-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -137,15 +137,19 @@ spec:
         - containerPort: 8080
         env:
         - name: LABEL_STUDIO_URL
-          value: "http://label-studio:8080"
+          value: "http://{{ .Values.labelstudio.externalIP }}:5000"
         - name: LABEL_STUDIO_USERNAME
           value: "labelstudio@example.com"
         - name: LABEL_STUDIO_PASSWORD
           value: "labelstudio"
         - name: LABEL_STUDIO_USER_TOKEN
           value: "ab9927067c51ff279d340d7321e4890dc2841c4a"
+        - name: PORT
+          value: "8080"
+        - name: LABEL_STUDIO_PORT
+          value: "8080"
         - name: POSTGRES_HOST
-          value: "app-db"
+          value: "postgres"
         - name: POSTGRES_PORT
           value: "5432"
         - name: POSTGRES_USER
@@ -153,7 +157,7 @@ spec:
         - name: POSTGRES_PASSWORD
           value: "password"
         - name: POSTGRES_DB
-          value: "appdb"
+          value: "mlflowdb"
         volumeMounts:
         - name: labelstudio-data
           mountPath: /label-studio/data
