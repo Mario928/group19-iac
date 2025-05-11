@@ -1,5 +1,5 @@
 ---
-- name: Post-Install kubectl Setup
+- name: Post-Install kubectl Setup 
   hosts: node1,node2
   become: yes
   vars:
