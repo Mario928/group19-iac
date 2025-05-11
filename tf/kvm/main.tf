@@ -41,8 +41,19 @@ resource "openstack_networking_port_v2" "sharednet2_ports" {
     openstack_networking_secgroup_v2.allow_8002.id,
     openstack_networking_secgroup_v2.allow_8501.id,
     openstack_networking_secgroup_v2.allow_3000.id,
+    openstack_networking_secgroup_v2.allow_5000.id,
     openstack_networking_secgroup_v2.allow_5050.id,
     openstack_networking_secgroup_v2.allow_8888.id,
+    openstack_networking_secgroup_v2.allow_4000.id,
+    openstack_networking_secgroup_v2.allow_5432.id,
+    openstack_networking_secgroup_v2.allow_5051.id,
+    openstack_networking_secgroup_v2.allow_8793.id,
+    openstack_networking_secgroup_v2.allow_5555.id,
+    openstack_networking_secgroup_v2.allow_8265.id,
+    openstack_networking_secgroup_v2.allow_6379.id,
+    openstack_networking_secgroup_v2.allow_8090.id,
+    openstack_networking_secgroup_v2.allow_7000_7010.id,
+    openstack_networking_secgroup_v2.allow_10000_10010.id
   ]
 }
 
@@ -87,33 +98,28 @@ resource "openstack_networking_floatingip_v2" "node1_floating_ip" {
   port_id     = openstack_networking_port_v2.sharednet2_ports["node1"].id
 }
 
-// Block storage for persistent data (attached to node1)
-/* Original block storage resource that would create a new volume
-resource "openstack_blockstorage_volume_v3" "blockstorage_volume" {
-  name = "blockstorage-volume-${var.suffix}"  // Would create a new volume with dynamic name
-  size = 100
-  enable_online_resize = true
-}
-*/
 
-// Reusing existing block storage from previous deployment
+
+/* Commenting out existing block storage creation as it's already created
 resource "openstack_blockstorage_volume_v3" "blockstorage_volume" {
   name = "blockstorage-volume-project19"  // Existing block storage name
   size = 100
   enable_online_resize = true
 }
+*/
 
+// Using data source to reference existing block storage volume
+data "openstack_blockstorage_volume_v3" "existing_volume" {
+  name = "blockstorage-volume-project19"
+}
+
+// Attach the existing volume to the VM
 resource "openstack_compute_volume_attach_v2" "blockstorage_volume_attach" {
   instance_id = openstack_compute_instance_v2.nodes["node1"].id
-  volume_id   = openstack_blockstorage_volume_v3.blockstorage_volume.id
+  volume_id   = data.openstack_blockstorage_volume_v3.existing_volume.id
 }
 
-/* Original object storage resource that would create a new container
-resource "openstack_objectstorage_container_v1" "objectstore_container" {
-  provider = openstack.swift
-  name     = "object-container-${var.suffix}"  // Would create a new container with dynamic name
-}
-*/
+/*
 
 // Reusing existing object storage container
 resource "openstack_objectstorage_container_v1" "objectstore_container" {
@@ -121,3 +127,4 @@ resource "openstack_objectstorage_container_v1" "objectstore_container" {
   name     = "object-persist-project19"  // Keeping the existing name
 }
 
+*/
