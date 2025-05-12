@@ -98,33 +98,44 @@ resource "openstack_networking_floatingip_v2" "node1_floating_ip" {
   port_id     = openstack_networking_port_v2.sharednet2_ports["node1"].id
 }
 
-
-
-/* Commenting out existing block storage creation as it's already created
+// Block storage for persistent data (attached to node1)
+/* Original block storage resource that would create a new volume
 resource "openstack_blockstorage_volume_v3" "blockstorage_volume" {
-  name = "blockstorage-volume-project19"  // Existing block storage name
+  name = "blockstorage-volume-${var.suffix}"  // Would create a new volume with dynamic name
   size = 100
   enable_online_resize = true
 }
 */
 
-// Using data source to reference existing block storage volume
-data "openstack_blockstorage_volume_v3" "existing_volume" {
+// Keeping the existing block storage resource with lifecycle ignore_changes
+resource "openstack_blockstorage_volume_v3" "blockstorage_volume" {
   name = "blockstorage-volume-project19"
+  size = 100
+  enable_online_resize = true
+
+  lifecycle {
+    ignore_changes = all
+    prevent_destroy = true
+  }
 }
 
 // Attach the existing volume to the VM
 resource "openstack_compute_volume_attach_v2" "blockstorage_volume_attach" {
   instance_id = openstack_compute_instance_v2.nodes["node1"].id
-  volume_id   = data.openstack_blockstorage_volume_v3.existing_volume.id
+  volume_id   = openstack_blockstorage_volume_v3.blockstorage_volume.id
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
-/*
-
-// Reusing existing object storage container
+// Reusing existing object storage container with lifecycle ignore_changes
 resource "openstack_objectstorage_container_v1" "objectstore_container" {
   provider = openstack.swift
-  name     = "object-persist-project19"  // Keeping the existing name
-}
+  name     = "object-persist-project19"
 
-*/
+  lifecycle {
+    ignore_changes = all
+    prevent_destroy = true
+  }
+}
