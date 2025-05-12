@@ -73,8 +73,8 @@ spec:
           mountPath: /mnt/mydata/prometheus
       volumes:
       - name: prometheus-storage
-        persistentVolume:
-          claimName: prometheus-data-pv
+        persistentVolumeClaim :
+          claimName: prometheus-data-pvc
 ---
 apiVersion: v1
 kind: ConfigMap
