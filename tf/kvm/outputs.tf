@@ -19,7 +19,7 @@ output "ssh_command" {
 }
 
 output "block_volume_name" {
-  value       = openstack_blockstorage_volume_v3.blockstorage_volume.name
+  value       = openstack_blockstorage_volume_v3.blockstorage_volume.name 
   description = "Name of the persistent block volume"
 }
 
